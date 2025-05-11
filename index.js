@@ -40,7 +40,7 @@ async function run() {
     );
 
       const userCollection = client.db("assetDB").collection("users");
-        const productCollection = client.db("assetDB").collection("products");
+      const productCollection = client.db("assetDB").collection("products");
 
     // user related apis-------------------------------------------
 
@@ -55,6 +55,7 @@ async function run() {
       }
     });
 
+    // navbar
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
@@ -62,6 +63,7 @@ async function run() {
       res.send(result);
     });
 
+    // joinEmployee | joinHR page
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
@@ -77,6 +79,15 @@ async function run() {
     });
 
     // product related apis-----------------------------------------------------
+
+    // AddAsset.jsx
+    app.post("/products", async (req, res) => {
+      const product = req.body;
+      const result = await productCollection.insertOne(product);
+      res.send(result);
+    });
+
+    // AssetList.jsx
     app.get("/products", async (req, res) => {
       const products = await productCollection.find().toArray();
       res.send(products);
