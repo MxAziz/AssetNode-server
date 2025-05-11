@@ -41,6 +41,7 @@ async function run() {
 
       const userCollection = client.db("assetDB").collection("users");
       const productCollection = client.db("assetDB").collection("products");
+    const requestCollection = client.db("assetDB").collection("requestProducts");
 
     // user related apis-------------------------------------------
 
@@ -108,6 +109,8 @@ async function run() {
       const products = await requestCollection.find(query).toArray();
       res.send(products);
     });
+
+    // asset request collection -------------------------------------------------
     app.get("/allRequestAsset", async (req, res) => {
       const result = await requestCollection.find().toArray();
       res.send(result);
@@ -170,7 +173,24 @@ async function run() {
       }
     });
 
+    // assetList.jsx (update)
+    app.put("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const updatedProduct = req.body;
 
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: {
+          productName: updatedProduct.productName,
+          type: updatedProduct.type,
+          productQuantity: updatedProduct.productQuantity,
+        },
+      };
+      const result = await productCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    // assetList.jsx
     app.delete("/products/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
