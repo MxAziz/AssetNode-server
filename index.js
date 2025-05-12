@@ -47,6 +47,7 @@ async function run() {
 
     // user related apis-------------------------------------------
 
+    // AddEmployee.jsx
     app.get("/users", async (req, res) => {
       try {
         const result = await userCollection
@@ -174,6 +175,32 @@ async function run() {
         res.status(500).json({ error: "Failed to submit asset request" });
       }
     });
+
+    app.patch("/updateRequestStatus/:id", async (req, res) => {
+  const id = req.params.id;
+  const { status } = req.body;
+
+  try {
+    const filter = { _id: new ObjectId(id) };
+    const updateDoc = {
+      $set: {
+        requestStatus: status,
+      },
+    };
+
+    const result = await requestCollection.updateOne(filter, updateDoc);
+
+    if (result.modifiedCount > 0) {
+      res.send({ message: "Status updated successfully" });
+    } else {
+      res.status(404).send({ message: "No document found or status already set" });
+    }
+  } catch (error) {
+    console.error("Error updating status:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+});
+
 
     // my asset (delete)
     app.delete("/products/:id", async (req, res) => {
