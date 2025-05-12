@@ -39,9 +39,11 @@ async function run() {
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
 
+    // database collections
       const userCollection = client.db("assetDB").collection("users");
       const productCollection = client.db("assetDB").collection("products");
-    const requestCollection = client.db("assetDB").collection("requestProducts");
+      const requestCollection = client.db("assetDB").collection("requestProducts");
+      const teamCollection = client.db("assetDB").collection("teams");
 
     // user related apis-------------------------------------------
 
@@ -173,6 +175,14 @@ async function run() {
       }
     });
 
+    // my asset (delete)
+    app.delete("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await requestCollection.deleteOne(query);
+      res.send(result);
+    });
+
     // assetList.jsx (update)
     app.put("/products/:id", async (req, res) => {
       const id = req.params.id;
@@ -190,8 +200,8 @@ async function run() {
       res.send(result);
     });
 
-    // assetList.jsx
-    app.delete("/products/:id", async (req, res) => {
+    // assetList.jsx (delete)
+    app.delete("/product/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await productCollection.deleteOne(query);
