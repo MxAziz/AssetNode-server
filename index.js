@@ -237,6 +237,56 @@ async function run() {
 
 
 
+    // team related apis-----------------------------------------------------
+
+    // AddEmployee.jsx
+
+    app.put("/add-to-team/:id", async (req, res) => {
+      const userId = req.params.id;
+      const { teamId, companyId } = req.body;
+
+      try {
+        const db = req.app.locals.db; // MongoDB database instance
+
+        // Step 1: Update user info
+        const userUpdateResult = userCollection.updateOne(
+          { _id: new ObjectId(userId) },
+          {
+            $set: {
+              teamId: teamId,
+              companyId: companyId,
+              affiliated: true,
+              role: "employee",
+            },
+          }
+        );
+
+        // Step 2: Add user to team members array
+        const teamUpdateResult = teamCollection.updateOne(
+          { _id: new ObjectId(teamId) },
+          {
+            $addToSet: { members: new ObjectId(userId) },
+          },
+          { upsert: true }
+        );
+
+        res.status(200).json({
+          success: true,
+          message: "Employee added to team",
+          userModified: userUpdateResult.modifiedCount,
+          teamModified: teamUpdateResult.modifiedCount,
+        });
+      } catch (err) {
+        console.error(err);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      }
+    });
+
+
+
+
 
   } finally {
     // Ensures that the client will close when you finish/error
