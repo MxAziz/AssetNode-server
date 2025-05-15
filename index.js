@@ -286,6 +286,75 @@ async function run() {
 
 
 
+    // -------------------------------------------------- update korte hobe.
+    // MyEmployee.jsx (get all members)
+    app.get("/team-members/:teamId", async (req, res) => {
+      const db = req.app.locals.db;
+      const teamId = req.params.teamId;
+
+      try {
+        const team = db.teamCollection.findOne({ _id: new ObjectId(teamId) });
+
+        if (!team) {
+          return res
+            .status(404)
+            .json({ success: false, message: "Team not found" });
+        }
+
+        const memberIds = team.members || [];
+
+        const members = db.teamCollection
+          .find({ _id: { $in: memberIds.map((id) => new ObjectId(id)) } })
+          .project({ name: 1, photo: 1, role: 1 })
+          .toArray();
+
+        res.status(200).json({ success: true, members });
+      } catch (err) {
+        console.error(err);
+        res
+          .status(500)
+          .json({ success: false, message: "Internal server error" });
+      }
+    });
+
+
+    // MyEmployee.jsx
+    app.put("/remove-from-team/:userId", async (req, res) => {
+      const db = req.app.locals.db;
+      const userId = req.params.userId;
+      const { teamId } = req.body;
+
+      try {
+        // Step 1: Remove userId from team's member array
+        await db.teamCollection
+          .updateOne(
+            { _id: new ObjectId(teamId) },
+            { $pull: { members: new ObjectId(userId) } }
+          );
+
+        // Step 2: Reset user affiliation
+        await db.userCollection.updateOne(
+          { _id: new ObjectId(userId) },
+          {
+            $set: {
+              affiliated: false,
+              teamId: null,
+              companyId: null,
+              role: "user",
+            },
+          }
+        );
+
+        res.status(200).json({ success: true, message: "Removed from team" });
+      } catch (err) {
+        console.error(err);
+        res
+          .status(500)
+          .json({ success: false, message: "Error removing from team" });
+      }
+    });
+
+    // -------------------------------------------------
 
 
   } finally {
